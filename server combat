@@ -1,0 +1,155 @@
+-- MainEvent Logic
+game.ReplicatedStorage.MainEvent.OnServerEvent:Connect(function(plr)
+	local function createHitbox(size, color, positionOffset, damage, vfxTemplate, soundTemplate)
+		local hitbox = Instance.new("Part")
+		hitbox.Parent = workspace
+		hitbox.CanCollide = false
+		hitbox.Anchored = true
+		hitbox.Size = size
+		hitbox.BrickColor = BrickColor.new(color)
+		hitbox.Transparency = 1
+		hitbox.CFrame = plr.Character:WaitForChild("HumanoidRootPart").CFrame * positionOffset
+		game.Debris:AddItem(hitbox, 1)
+
+		local hitboxCooldown = false
+		hitbox.Touched:Connect(function(hit)
+			local humanoid = hit.Parent:FindFirstChild("Humanoid")
+			if hit.Parent.Name ~= plr.Name and humanoid and not hitboxCooldown then
+				hitboxCooldown = true
+				humanoid:TakeDamage(damage)
+
+				local vfx = vfxTemplate:Clone()
+				vfx.Parent = hit.Parent.HumanoidRootPart
+
+				local sound = soundTemplate:Clone()
+				sound.Parent = hit.Parent.HumanoidRootPart
+				sound.Volume = 1.2
+				sound:Play()
+				game.Debris:AddItem(sound, 2)
+
+				-- Emit particles
+				for _, emitter in ipairs(vfx:GetChildren()) do
+					if emitter:IsA("ParticleEmitter") then
+						emitter:Emit(emitter:GetAttribute("EmitCount"))
+					end
+				end
+				game.Debris:AddItem(vfx, 0.3)
+
+				-- Add knockback
+				local bodyVelocity = Instance.new("BodyVelocity")
+				bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+				bodyVelocity.Velocity = plr.Character.HumanoidRootPart.CFrame.LookVector * 8
+				bodyVelocity.Parent = hit.Parent.HumanoidRootPart
+				game.Debris:AddItem(bodyVelocity, 0.2)
+				
+				
+				local bool = Instance.new("BoolValue")
+				bool.Name = "Stunned"
+				bool.Parent = hit.Parent
+				game.Debris:AddItem(bool, 1)
+				hit.Parent.Humanoid.WalkSpeed = 0
+				task.wait(.5)
+				hit.Parent.Humanoid.WalkSpeed = 21
+				
+				
+
+				task.wait(1.1)
+				hitboxCooldown = false
+			end
+		end)
+	end
+
+	-- Change WalkSpeed
+	task.defer(function()
+		plr.Character.Humanoid.WalkSpeed = 16
+		task.wait(0.5)
+		plr.Character.Humanoid.WalkSpeed = 21
+	end)
+
+	-- Create hitbox for MainEvent
+	createHitbox(
+		Vector3.new(7, 7, 7), 
+		"Really red", 
+		CFrame.new(0, 0, -4), 
+		5, 
+		game.ReplicatedStorage.Vfx.HITVFX.Attachment, 
+		script.hit_punch_l
+	)
+end)
+
+-- FinalEvent Logic
+game.ReplicatedStorage.FinalEvent.OnServerEvent:Connect(function(plr)
+	local function createHitbox(size, color, positionOffset, damage, vfxTemplate, soundTemplate)
+		local hitbox = Instance.new("Part")
+		hitbox.Parent = workspace
+		hitbox.CanCollide = false
+		hitbox.Anchored = true
+		hitbox.Size = size
+		hitbox.BrickColor = BrickColor.new(color)
+		hitbox.Transparency = 1
+		hitbox.CFrame = plr.Character:WaitForChild("HumanoidRootPart").CFrame * positionOffset
+		game.Debris:AddItem(hitbox, 1)
+
+		local hitboxCooldown = false
+		hitbox.Touched:Connect(function(hit)
+			local humanoid = hit.Parent:FindFirstChild("Humanoid")
+			if hit.Parent.Name ~= plr.Name and humanoid and not hitboxCooldown then
+				hitboxCooldown = true
+				humanoid:TakeDamage(damage)
+
+				local vfx = vfxTemplate:Clone()
+				vfx.Parent = hit.Parent.HumanoidRootPart
+
+				local sound = soundTemplate:Clone()
+				sound.Parent = hit.Parent.HumanoidRootPart
+				sound.Volume = 1.5
+				sound:Play()
+				game.Debris:AddItem(sound, 2)
+
+				-- Emit particles
+				for _, emitter in ipairs(vfx:GetChildren()) do
+					if emitter:IsA("ParticleEmitter") then
+						emitter:Emit(emitter:GetAttribute("EmitCount"))
+					end
+				end
+				game.Debris:AddItem(vfx, 0.3)
+
+				-- Add knockback
+				local bodyVelocity = Instance.new("BodyVelocity")
+				bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+				bodyVelocity.Velocity = plr.Character.HumanoidRootPart.CFrame.LookVector * 2000 -- Higher knockback
+				bodyVelocity.Parent = hit.Parent.HumanoidRootPart
+				game.Debris:AddItem(bodyVelocity, 0.3)
+				
+				local bool = Instance.new("BoolValue")
+				bool.Name = "Stunned"
+				bool.Parent = hit.Parent
+				game.Debris:AddItem(bool, 1)
+				hit.Parent.Humanoid.WalkSpeed = 0
+				task.wait(.5)
+				hit.Parent.Humanoid.WalkSpeed = 21
+
+				task.wait(1.1)
+				hitboxCooldown = false
+			
+			end
+		end)
+	end
+
+	-- Change WalkSpeed
+	task.defer(function()
+		plr.Character.Humanoid.WalkSpeed = 16
+		task.wait(0.5)
+		plr.Character.Humanoid.WalkSpeed = 21
+	end)
+
+	-- Create hitbox for FinalEvent
+	createHitbox(
+		Vector3.new(12, 15, 12), -- Larger size for final hit
+		"Bright yellow",         -- Unique color
+		CFrame.new(0, 0, -5),    -- Adjusted offset
+		15,                      -- Increased damage
+		game.ReplicatedStorage.Vfx.FinalVfx.Attachment, -- Final VFX template
+		script.hit_final_sound -- Final sound template
+	)
+end)

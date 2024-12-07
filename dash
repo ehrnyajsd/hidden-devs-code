@@ -1,0 +1,57 @@
+local UIS = game:GetService("UserInputService")
+local char = script.Parent
+
+local slideAnim = Instance.new("Animation")
+slideAnim.AnimationId = "rbxassetid://92091186362416" -- Enter your Animation ID
+
+local keybind = Enum.KeyCode.Q -- Key for ability
+local canslide = true
+local cooldownTime = 3 -- Cooldown duration in seconds
+
+-- Reference the ImageLabel
+local playerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local cooldownUI = playerGui:WaitForChild("ScreenGui").CooldownImage -- Update with your UI path
+
+-- Set the ImageLabel transparency to 0 at the start
+cooldownUI.ImageTransparency = 0
+
+UIS.InputBegan:Connect(function(input, gameprocessed)
+	if gameprocessed then return end
+	if not canslide then return end
+
+	if input.KeyCode == keybind then
+		canslide = false
+
+		-- Set UI to fully visible when ability is on cooldown
+		cooldownUI.ImageTransparency = 0
+
+		local playAnim = char.Humanoid:LoadAnimation(slideAnim)
+		playAnim:Play()
+
+		-- Create the BodyVelocity
+		local slide = Instance.new("BodyVelocity")
+		slide.MaxForce = Vector3.new(1, 0, 1) * 20000 -- Adjusted for less slippery movement
+		slide.Velocity = char.HumanoidRootPart.CFrame.lookVector * 60 -- Reduced initial speed
+		slide.Parent = char.HumanoidRootPart
+
+		-- Gradually reduce velocity
+		for count = 1, 5 do -- Fewer iterations for shorter slide duration
+			wait(0.1)
+			slide.Velocity *= 1 -- Higher dampening factor for quicker stop
+		end
+
+		playAnim:Stop()
+		slide:Destroy()
+
+		-- Handle cooldown timer and UI transparency
+		for timeLeft = cooldownTime, 0, -0.1 do
+			-- Linearly interpolate transparency based on time left
+			cooldownUI.ImageTransparency = timeLeft / cooldownTime
+			task.wait(0.1)
+		end
+
+		-- Reset UI and ability
+		cooldownUI.ImageTransparency = 0
+		canslide = true
+	end
+end)
